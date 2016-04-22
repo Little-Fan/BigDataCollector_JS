@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>获取视频信息</title>
+</head>
+<body>
+<video src="video/s7_tvc.mp4"></video>
+<script src="node_modules/jquery/dist/jquery.js"></script>
+<script src="colletction.js"></script>
+<script>
+    var getVideoInfo = new GetVideoInfo({
+        initialize: function () {
+            this.getVideo('video');
+            this.userAgent();
+        }
+    });
+
+    console.log(getVideoInfo.detectOS());
+    console.log(getVideoInfo.detectBrowser());
+    console.log(getVideoInfo.detectOSVersion());
+</script>
+</body>
+</html>
