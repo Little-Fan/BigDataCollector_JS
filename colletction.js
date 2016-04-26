@@ -71,6 +71,14 @@ $.extend(true, GetVideoInfo.prototype, {
     getVideoURL: function () {
         return this.videoObject.currentSrc
     },
+    getVideoDuration: function () {
+        return Math.round(this.videoObject.duration);
+    },
+    startTime: function () {
+        this.videoObject.addEventListener("loadstart", function () {
+            console.log((new Date()).getTime());
+        }, false);
+    },
     userAgent: function () {
         this.ua = window.navigator.userAgent;
         return this.ua;
