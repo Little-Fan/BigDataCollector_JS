@@ -14,6 +14,7 @@
             this.getVideo('video');
             this.userAgent();
             this.evenInitialize();
+            this.processData();
         }
     });
 
@@ -23,7 +24,7 @@
         },false);
     };
 
-    eventTester("timeupdate"); //播放时间改变
+    //eventTester("timeupdate"); //播放时间改变
 
 
     /*eventTester("loadstart"); //客户端开始请求数据

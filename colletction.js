@@ -6,6 +6,7 @@ var GetVideoInfo = function (options) {
     options || (options = {});
     $.extend(this, options);
     this._reset();
+    this.pageLoadTime = new Date().getTime();  //刚进入页面的时间戳
     this.initialize.apply(this);   //初始化操作
 };
 
@@ -43,7 +44,7 @@ $.extend(true, GetVideoInfo.prototype, {
     },
     _reset: function () {
         this.length = 0;
-        this.models = [];
+        this.models = {};
     },
     getVideo: function (selector) {
         //只获取页面上第一个视频
@@ -80,23 +81,14 @@ $.extend(true, GetVideoInfo.prototype, {
         }
     },
     evenInitialize: function () {
-        var self = this;
+        var self = this, num = 0;
 
-        this.videoStartTime = [];
-        this.videoEndTime = [];
-
-        this.addEvent(this.videoObject, "suspend", function () {
-            self.videoStartTime.push(new Date().getTime());
-        });
-
-        this.addEvent(this.videoObject, "playing", function () {
-            self.videoEndTime.push(new Date().getTime());
-        });
-
+        //第一次开始播放的时候,证明缓冲已经完成
         this.addEvent(this.videoObject, "timeupdate", function () {
-            if (self.videoStartTime.length > 0 && self.videoEndTime.length > 0) {
-                self.videoLoadTime = self.videoEndTime[0] - self.videoStartTime[0];
+            if (num === 0) {
+                self.videoLoadTime = Number(new Date().getTime()) - self.pageLoadTime;
             }
+            num++;
         });
     },
     userAgent: function () {
@@ -172,5 +164,16 @@ $.extend(true, GetVideoInfo.prototype, {
         return ( parseInt(ary[0], 10) || 0 ) + "." +
             ( parseInt(ary[1], 10) || 0 ) + "." +
             ( parseInt(ary[2], 10) || 0 );
+    },
+    processData: function () {
+        this.models.ref = this.getReferrer();  //ref: 来源（来自于来个页面）
+        this.models.pu = this.getCurrentURL();  //pu：page url 页面url（当前页面url）
+        this.models.vurl = this.getVideoURL();  //vurl:视频URL（被播放的视频的url地址
+        this.models.pt = this.getTitle();  //pt: page title,页面标题
+        this.models.bs = this.detectBrowser();  //bs：浏览器类型（browserType）
+        this.models.os = this.detectOSVersion();  //os：系统(系统版本)
+        this.models.pf = this.detectOS();  // pf:播放平台（android，IOS，windows）
+        this.models.dr = this.getVideoDuration(); //dr: 视频文件总时长(videoDuration)
+        this.models.lt = this.videoLoadTime;  //lt: 加载时长  毫秒（loaddingTime）
     }
 });
