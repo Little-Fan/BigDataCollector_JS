@@ -15,6 +15,19 @@
             this.userAgent();
             this.evenInitialize();
             this.processData();
+            this.startPolling();
+        },
+        //默认参数
+        models:{
+            appid: 1,  //应用ID (应用ID)
+            cmd: '',  //播放类型(直播、点播)
+            vid: '',  //业务系统中的视频ID(vedioId)
+            von: '',  //视频原始名称(VideoOriginalName)
+            n: '',  //视频名称(VideoName)
+            ch: '',  //视频频道(VideoTVChannel)
+            wch: '', // 网络频道(VideoWebChannel)
+            tg: '', //标签
+            cdn: '' //cdn信息
         }
     });
 

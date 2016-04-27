@@ -3,9 +3,9 @@
  */
 
 var GetVideoInfo = function (options) {
+    this._reset();
     options || (options = {});
     $.extend(this, options);
-    this._reset();
     this.pageLoadTime = new Date().getTime();  //刚进入页面的时间戳
     this.initialize.apply(this);   //初始化操作
 };
@@ -61,16 +61,16 @@ $.extend(true, GetVideoInfo.prototype, {
             }
         } catch (e) {
         }
-        return ref;
+        return encodeURIComponent(ref);
     },
     getTitle: function () {
-        return $('title').text();
+        return encodeURIComponent($('title').text());
     },
     getCurrentURL: function () {
-        return window.location.href;
+        return encodeURIComponent(window.location.href);
     },
     getVideoURL: function () {
-        return this.videoObject.currentSrc
+        return encodeURIComponent(this.videoObject.currentSrc);
     },
     getVideoDuration: function () {
         return Math.round(this.videoObject.duration);
@@ -193,16 +193,22 @@ $.extend(true, GetVideoInfo.prototype, {
     },
     executePolling: function () {
         /* 上传数据操作 */
-        $.ajax({
-            type: 'POST',
-            url: '/test/download.php'
-        }).done(function (data) {
+        var img = new Image(),
+            data = $.param(this.models),
+            self = this,
+            timeStamp = new Date().getTime();
 
-        }).fail(function () {
-            alert("$.get failed!");
-        }).always(function (data) {
-            self.onCommit();   //异步调用成功或者失败都执行
-        })
+        img.src = 'http://tracker.otvcloud.com/ot.gif?_=' + timeStamp + '&' + data;
+
+        img.onabort = function () {
+            self.onCommit();
+        };
+        img.onerror = function () {
+            self.onCommit();
+        };
+        img.onload = function () {
+            self.onCommit();
+        };
     },
     onCommit: function () {
         var self = this;
@@ -211,3 +217,4 @@ $.extend(true, GetVideoInfo.prototype, {
         }, 1000 * this.interval);
     }
 });
+
