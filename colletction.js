@@ -175,5 +175,39 @@ $.extend(true, GetVideoInfo.prototype, {
         this.models.pf = this.detectOS();  // pf:播放平台（android，IOS，windows）
         this.models.dr = this.getVideoDuration(); //dr: 视频文件总时长(videoDuration)
         this.models.lt = this.videoLoadTime;  //lt: 加载时长  毫秒（loaddingTime）
+    },
+    polling: false,
+    url: '',
+    interval: 1,
+    startPolling: function (interval) {
+        this.polling = true;
+
+        if (interval) {
+            this.interval = interval;
+        }
+
+        this.executePolling();
+    },
+    stopPolling: function () {
+        this.polling = false;
+    },
+    executePolling: function () {
+        /* 上传数据操作 */
+        $.ajax({
+            type: 'POST',
+            url: '/test/download.php'
+        }).done(function (data) {
+
+        }).fail(function () {
+            alert("$.get failed!");
+        }).always(function (data) {
+            self.onCommit();   //异步调用成功或者失败都执行
+        })
+    },
+    onCommit: function () {
+        var self = this;
+        setTimeout(function () {
+            self.executePolling();
+        }, 1000 * this.interval);
     }
 });
