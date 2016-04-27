@@ -5,7 +5,7 @@
     <title>获取视频信息</title>
 </head>
 <body>
-<video src="http://www.w3school.com.cn/i/movie.ogg" width="500" height="500" controls></video>
+<video src="http://42.159.239.126/LoveMore.mp4" width="500" height="500" controls autoplay></video>
 <script src="node_modules/jquery/dist/jquery.js"></script>
 <script src="colletction.js"></script>
 <script>
@@ -13,6 +13,7 @@
         initialize: function () {
             this.getVideo('video');
             this.userAgent();
+            this.evenInitialize();
         }
     });
 
@@ -22,14 +23,14 @@
         },false);
     };
 
-    eventTester("loadstart"); //客户端开始请求数据
-    eventTester("progress"); //客户端正在请求数据
-    eventTester("suspend"); //延迟下载
+    eventTester("timeupdate"); //播放时间改变
+
+
+    /*eventTester("loadstart"); //客户端开始请求数据
+    //eventTester("progress"); //客户端正在请求数据
     eventTester("abort"); //客户端主动终止下载（不是因为错误引起）
     eventTester("loadstart"); //客户端开始请求数据
-    eventTester("progress"); //客户端正在请求数据
     eventTester("suspend"); //延迟下载
-    eventTester("abort"); //客户端主动终止下载（不是因为错误引起），
     eventTester("error"); //请求数据时遇到错误
     eventTester("stalled"); //网速失速
     eventTester("play"); //play()和autoplay开始播放时触发
@@ -42,11 +43,11 @@
     eventTester("canplaythrough"); //可以播放，歌曲全部加载完毕
     eventTester("seeking"); //寻找中
     eventTester("seeked"); //寻找完毕
-    eventTester("timeupdate"); //播放时间改变
+
     eventTester("ended"); //播放结束
     eventTester("ratechange"); //播放速率改变
     eventTester("durationchange"); //资源长度改变
-    eventTester("volumechange"); //音量改变
+    eventTester("volumechange"); //音量改变*/
 </script>
 </body>
 </html>

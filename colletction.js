@@ -74,10 +74,30 @@ $.extend(true, GetVideoInfo.prototype, {
     getVideoDuration: function () {
         return Math.round(this.videoObject.duration);
     },
-    startTime: function () {
-        this.videoObject.addEventListener("loadstart", function () {
-            console.log((new Date()).getTime());
-        }, false);
+    addEvent: function (element, type, handler) {
+        if (element.addEventListener) {
+            element.addEventListener(type, handler, false);
+        }
+    },
+    evenInitialize: function () {
+        var self = this;
+
+        this.videoStartTime = [];
+        this.videoEndTime = [];
+
+        this.addEvent(this.videoObject, "suspend", function () {
+            self.videoStartTime.push(new Date().getTime());
+        });
+
+        this.addEvent(this.videoObject, "playing", function () {
+            self.videoEndTime.push(new Date().getTime());
+        });
+
+        this.addEvent(this.videoObject, "timeupdate", function () {
+            if (self.videoStartTime.length > 0 && self.videoEndTime.length > 0) {
+                self.videoLoadTime = self.videoEndTime[0] - self.videoStartTime[0];
+            }
+        });
     },
     userAgent: function () {
         this.ua = window.navigator.userAgent;
