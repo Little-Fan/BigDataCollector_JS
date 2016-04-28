@@ -87,6 +87,7 @@ $.extend(true, GetVideoInfo.prototype, {
         this.addEvent(this.videoObject, "timeupdate", function () {
             if (num === 0) {
                 self.videoLoadTime = Number(new Date().getTime()) - self.pageLoadTime;
+                self.processData();
             }
             num++;
         });
