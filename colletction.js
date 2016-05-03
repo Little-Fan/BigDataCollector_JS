@@ -219,6 +219,7 @@ $.extend(true, GetVideoInfo.prototype, {
             self.onCommit();
         };
         img.onload = function () {
+            self.sendNumbers ++;
             self.onCommit();
         };
     },
@@ -229,4 +230,3 @@ $.extend(true, GetVideoInfo.prototype, {
         }, 1000 * this.interval);
     }
 });
-
