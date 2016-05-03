@@ -6,7 +6,7 @@ var GetVideoInfo = function (options) {
     this._reset();
     options || (options = {});
     $.extend(this, options);
-    this.pageLoadTime = new Date().getTime();  //刚进入页面的时间戳
+    this.pageStartTime = new Date().getTime();  //刚进入页面的时间戳
     this.initialize.apply(this);   //初始化操作
 };
 
@@ -80,17 +80,28 @@ $.extend(true, GetVideoInfo.prototype, {
             element.addEventListener(type, handler, false);
         }
     },
+    removeEvent: function (target, type, func) {
+        if (target.removeEventListener) {
+            target.removeEventListener(type, func, false);
+        } else if (target.detachEvent) {
+            target.detachEvent("on" + type, func);
+        } else {
+            target["on" + type] = null;
+        }
+    },
     evenInitialize: function () {
-        var self = this, num = 0;
+        var self = this;
 
-        //第一次开始播放的时候,证明缓冲已经完成
-        this.addEvent(this.videoObject, "timeupdate", function () {
-            if (num === 0) {
-                self.videoLoadTime = Number(new Date().getTime()) - self.pageLoadTime;
-                self.processData();
-            }
-            num++;
-        });
+        if(self.sendNumbers === 0){
+            self.addEvent(self.videoObject, 'timeupdate', self.calcLoadingTime);  //第一次开始播放的时候,证明缓冲已经完成
+            self.processData();   //数据组装
+        } else {
+            self.removeEvent(this.videoObject, 'timeupdate', self.calcLoadingTime);  //删除事件监听，节约内存
+        }
+    },
+    sendNumbers: 0,   //发送序号
+    calcLoadingTime: function () {
+        this.videoLoadTime = Number(new Date().getTime()) - this.pageStartTime;
     },
     userAgent: function () {
         this.ua = window.navigator.userAgent;
