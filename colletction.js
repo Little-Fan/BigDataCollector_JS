@@ -8,10 +8,16 @@ var GetVideoInfo = function (options) {
     $.extend(this, options);
     this.pageStartTime = new Date().getTime();  //刚进入页面的时间戳
     this.initialize.apply(this);   //初始化操作
+    this.uid = this.createUID(32);
+    if(!(this.getCookie('uid').length === 32)){
+        this.setCookie('uid', this.uid, 3650)
+    }
 };
 
 $.extend(true, GetVideoInfo.prototype, {
     videoObject: '',
+    sendNumbers: 0,   //发送序号
+    stickTimes: 0,  //卡顿次数
     model: {},
     initialize: function () {},
     setCookie: function (cname, cvalue, exdays) {
@@ -98,8 +104,8 @@ $.extend(true, GetVideoInfo.prototype, {
         } else {
             self.removeEvent(this.videoObject, 'timeupdate', self.calcLoadingTime);  //删除事件监听，节约内存
         }
+        self.bindStickTimes();
     },
-    sendNumbers: 0,   //发送序号
     calcLoadingTime: function () {
         this.videoLoadTime = Number(new Date().getTime()) - this.pageStartTime;
     },
@@ -187,6 +193,13 @@ $.extend(true, GetVideoInfo.prototype, {
         this.models.pf = this.detectOS();  // pf:播放平台（android，IOS，windows）
         this.models.dr = this.getVideoDuration(); //dr: 视频文件总时长(videoDuration)
         this.models.lt = this.videoLoadTime;  //lt: 加载时长  毫秒（loaddingTime）
+        this.models.st = this.stickTimes;   //卡顿次数
+    },
+    bindStickTimes: function () {
+        var self = this;
+        self.addEvent(self.videoObject, 'waiting', function () {
+            self.stickTimes++;
+        });
     },
     polling: false,
     url: '',
@@ -211,6 +224,8 @@ $.extend(true, GetVideoInfo.prototype, {
             timeStamp = new Date().getTime();
 
         img.src = 'http://tracker.otvcloud.com/ot.gif?_=' + timeStamp + '&' + data;
+
+        self.processData();
 
         img.onabort = function () {
             self.onCommit();

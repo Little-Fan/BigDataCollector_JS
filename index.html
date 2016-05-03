@@ -11,6 +11,7 @@
 <script>
     var getVideoInfo = new GetVideoInfo({
         initialize: function () {
+            this.createUID();
             this.getVideo('video');
             this.userAgent();
             this.evenInitialize();
@@ -39,7 +40,7 @@
     //eventTester("timeupdate"); //播放时间改变
     eventTester("emptied"); //当目前的播放列表为空时
     eventTester("loadstart"); //客户端开始请求数据
-    eventTester("progress"); //客户端正在请求数据
+    //eventTester("progress"); //客户端正在请求数据
     eventTester("abort"); //客户端主动终止下载（不是因为错误引起）
     eventTester("loadstart"); //客户端开始请求数据
     eventTester("suspend"); //延迟下载
