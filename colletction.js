@@ -99,7 +99,7 @@ $.extend(true, GetVideoInfo.prototype, {
         var self = this;
 
         if(self.sendNumbers === 0){
-            self.addEvent(self.videoObject, 'timeupdate', self.calcLoadingTime);  //第一次开始播放的时候,证明缓冲已经完成
+            self.addEvent(self.videoObject, 'timeupdate', self.calcLoadingTime.call(self));  //第一次开始播放的时候,证明缓冲已经完成
             self.processData();   //数据组装
         } else {
             self.removeEvent(this.videoObject, 'timeupdate', self.calcLoadingTime);  //删除事件监听，节约内存
@@ -108,6 +108,7 @@ $.extend(true, GetVideoInfo.prototype, {
     },
     calcLoadingTime: function () {
         this.videoLoadTime = Number(new Date().getTime()) - this.pageStartTime;
+        this.startPolling(10);
     },
     userAgent: function () {
         this.ua = window.navigator.userAgent;
@@ -192,7 +193,7 @@ $.extend(true, GetVideoInfo.prototype, {
         this.models.os = this.detectOSVersion();  //os：系统(系统版本)
         this.models.pf = this.detectOS();  // pf:播放平台（android，IOS，windows）
         this.models.dr = this.getVideoDuration(); //dr: 视频文件总时长(videoDuration)
-        this.models.lt = this.videoLoadTime;  //lt: 加载时长  毫秒（loaddingTime）
+        this.models.lt = this.videoLoadTime || 0;  //lt: 加载时长  毫秒（loaddingTime）
         this.models.st = this.stickTimes;   //卡顿次数
     },
     bindStickTimes: function () {
