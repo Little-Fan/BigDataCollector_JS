@@ -5,7 +5,10 @@
     <title>获取视频信息</title>
 </head>
 <body>
-<video src="http://42.159.239.126/LoveMore.mp4" width="500" height="500" controls autoplay></video>
+<video src="http://42.159.239.126/LoveMore.mp4" width="500" height="350" controls="controls"></video>
+<div style="width: 50px; height: 300px;">
+    122\n 2lkjlfjdlfkjalkdjflk
+</div>
 <script src="node_modules/jquery/dist/jquery.js"></script>
 <script src="colletction.js"></script>
 <script>
@@ -30,7 +33,7 @@
         }
     });
 
-    var eventTester = function(e){
+    /*var eventTester = function(e){
         getVideoInfo.videoObject.addEventListener(e,function(){
             console.log((new Date()).getTime(),e)
         },false);
@@ -59,7 +62,7 @@
     eventTester("ratechange"); //播放速率改变
     eventTester("durationchange"); //资源长度改变
     eventTester("volumechange"); //音量改变
-    eventTester("ended"); //当目前的播放列表已结束时
+    eventTester("ended"); //当目前的播放列表已结束时*/
 </script>
 </body>
 </html>
