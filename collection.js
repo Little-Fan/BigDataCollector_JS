@@ -6,10 +6,12 @@ var GetVideoInfo = function (options) {
     this._reset();
     options || (options = {});
     $.extend(this, options);
-    this.pageStartTime = new Date().getTime();  //刚进入页面的时间戳
+    if (!window.PAGE_START_TIME){
+        throw new Error('请先在页面顶部复制以下代码：window.PAGE_START_TIME = new Date().getTime();');
+    }
     this.initialize.apply(this);   //初始化操作
-    this.uid = this.createUID(32);
     if(!(this.getCookie('uid').length === 32)){
+        this.uid = this.createUID(32);
         this.setCookie('uid', this.uid, 3650)
     }
 };
@@ -524,11 +526,18 @@ $.extend(true, GetVideoInfo.prototype, {
             ( parseInt(ary[1], 10) || 0 ) + "." +
             ( parseInt(ary[2], 10) || 0 );
     },
+    getVideoCurrentTime: function () {
+        return Math.round(this.videoObject.currentTime);
+    },
+    calcVideoDiffTime: function (lastTime) {
+        return Math.round(this.videoObject.currentTime) - lastTime;
+    },
     processData: function () {
+        this.models.sn = this.sendNumbers;
         this.models.ref = this.getReferrer();  //ref: 来源（来自于来个页面）
         this.models.pu = this.getCurrentURL();  //pu：page url 页面url（当前页面url）
         this.models.vurl = this.getVideoURL();  //vurl:视频URL（被播放的视频的url地址
-        this.models.pt = this.getTitle();  //pt: page title,页面标题
+        this.models.t = this.getTitle();  //pt: page title,页面标题
         this.models.bs = this.detectBrowser();  //bs：浏览器类型（browserType）
         this.models.os = this.detectOSVersion();  //os：系统(系统版本)
         this.models.pf = this.detectOS();  // pf:播放平台（android，IOS，windows）
@@ -536,6 +545,10 @@ $.extend(true, GetVideoInfo.prototype, {
         this.models.dr = this.getVideoDuration(); //dr: 视频文件总时长(videoDuration)
         this.models.lt = this.videoLoadTime || 0;  //lt: 加载时长  毫秒（loaddingTime）
         this.models.st = this.stickTimes;   //卡顿次数
+        this.models.pt = this.getVideoCurrentTime();  //获取当前播放的时间点
+        this.models.rpt = this.calcVideoDiffTime(this.models.pt); //实际播放时长用这个字段
+        this.models.tpt = Number(new Date().getTime()) - this.pageStartTime;
+        this.models.uid = this.getCookie('uid');
     },
     bindStickTimes: function () {
         var self = this;

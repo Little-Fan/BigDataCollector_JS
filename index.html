@@ -3,18 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <title>获取视频信息</title>
+    <script>
+        window.PAGE_START_TIME = new Date().getTime();
+    </script>
 </head>
 <body>
-<video src="http://42.159.239.126/LoveMore.mp4" width="500" height="350" controls="controls"></video>
-<div style="width: 50px; height: 300px;">
-    122\n 2lkjlfjdlfkjalkdjflk
-</div>
+<video src="video/LoveMore.mp4" width="500" height="350" controls="controls"></video>
 <script src="node_modules/jquery/dist/jquery.js"></script>
-<script src="colletction.js"></script>
+<script src="collection.js"></script>
 <script>
     var getVideoInfo = new GetVideoInfo({
         initialize: function () {
-            this.createUID();
             this.getVideo('video');
             this.userAgent();
             this.evenInitialize();
