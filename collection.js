@@ -549,6 +549,7 @@ $.extend(true, GetVideoInfo.prototype, {
         this.models.pt = this.getVideoCurrentTime();  //获取当前播放的时间点
         this.models.rpt = this.calcVideoDiffTime(this.lastPlayTime); //实际播放时长用这个字段
         this.models.tpt = (Number(new Date().getTime()) - this.pageStartTime) / 1000;  //单位秒
+        this.models.stay = this.models.tpt;  //停留时长
         this.models.uid = this.getCookie('uid');
         this.models.sd = this.totalStickDuration / 1000;
         return this.models;
