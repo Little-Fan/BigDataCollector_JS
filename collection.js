@@ -9,6 +9,7 @@ var GetVideoInfo = function (options) {
     if (!window.PAGE_START_TIME){
         throw new Error('请先在页面顶部复制以下代码：window.PAGE_START_TIME = new Date().getTime();');
     }
+    this.pageStartTime = window.PAGE_START_TIME;
     this.initialize.apply(this);   //初始化操作
     if(!(this.getCookie('uid').length === 32)){
         this.uid = this.createUID(32);
@@ -20,6 +21,7 @@ $.extend(true, GetVideoInfo.prototype, {
     videoObject: '',
     sendNumbers: 0,   //发送序号
     stickTimes: 0,  //卡顿次数
+    lastPlayTime: 0, //上次播放时间位置
     model: {},
     regexes: {
         device_parsers: [ {
@@ -408,7 +410,7 @@ $.extend(true, GetVideoInfo.prototype, {
         return encodeURIComponent(this.videoObject.currentSrc);
     },
     getVideoDuration: function () {
-        return Math.round(this.videoObject.duration);
+        return Math.round(this.videoObject.duration) || 0;
     },
     addEvent: function (element, type, handler) {
         if (element.addEventListener) {
@@ -506,7 +508,6 @@ $.extend(true, GetVideoInfo.prototype, {
             var m = ua.match(regexp);
             if (!m) return;
             ret.family = (rep ? rep.replace("$1", m[1]) : m[1]) || "other";
-            alert(ret.family);
             return true;
         });
         return ret.family || "other";
@@ -530,7 +531,7 @@ $.extend(true, GetVideoInfo.prototype, {
         return Math.round(this.videoObject.currentTime);
     },
     calcVideoDiffTime: function (lastTime) {
-        return Math.round(this.videoObject.currentTime) - lastTime;
+        return (Math.round(this.videoObject.currentTime) - lastTime) > 0 ? (Math.round(this.videoObject.currentTime) - lastTime) : 0;
     },
     processData: function () {
         this.models.sn = this.sendNumbers;
@@ -543,19 +544,36 @@ $.extend(true, GetVideoInfo.prototype, {
         this.models.pf = this.detectOS();  // pf:播放平台（android，IOS，windows）
         this.models.at = this.detectDeviceName();  // at:机型
         this.models.dr = this.getVideoDuration(); //dr: 视频文件总时长(videoDuration)
-        this.models.lt = this.videoLoadTime || 0;  //lt: 加载时长  毫秒（loaddingTime）
+        this.models.lt = (this.videoLoadTime) / 1000 || 0;  //lt: 加载时长  单位秒（loaddingTime）
         this.models.st = this.stickTimes;   //卡顿次数
         this.models.pt = this.getVideoCurrentTime();  //获取当前播放的时间点
-        this.models.rpt = this.calcVideoDiffTime(this.models.pt); //实际播放时长用这个字段
-        this.models.tpt = Number(new Date().getTime()) - this.pageStartTime;
+        this.models.rpt = this.calcVideoDiffTime(this.lastPlayTime); //实际播放时长用这个字段
+        this.models.tpt = (Number(new Date().getTime()) - this.pageStartTime) / 1000;  //单位秒
         this.models.uid = this.getCookie('uid');
+        this.models.sd = this.totalStickDuration / 1000;
+        return this.models;
     },
+    totalStickDuration: 0,
     bindStickTimes: function () {
-        var self = this;
+        var self = this,
+            currentStickDuration = 0,
+            waitingUnix,
+            playingUnix;
+
         self.addEvent(self.videoObject, 'waiting', function () {
             self.stickTimes++;
+            waitingUnix = Number(new Date().getTime());
+        });
+
+        self.addEvent(self.videoObject, 'playing', function () {
+            playingUnix = Number(new Date().getTime());
+            if ((playingUnix - waitingUnix) > 0) {
+                currentStickDuration = playingUnix - waitingUnix;
+                self.totalStickDuration = self.totalStickDuration + currentStickDuration;
+            }
         });
     },
+
     polling: false,
     url: '',
     interval: 1,
@@ -574,13 +592,14 @@ $.extend(true, GetVideoInfo.prototype, {
     executePolling: function () {
         /* 上传数据操作 */
         var img = new Image(),
-            data = $.param(this.models),
             self = this,
-            timeStamp = new Date().getTime();
+            timeStamp = new Date().getTime(),
+            data;
 
-        img.src = 'http://tracker.otvcloud.com/ot.gif?_=' + timeStamp + '&' + data;
-
-        self.processData();
+        data = self.processData();
+        self.lastPlayTime = data.pt;
+        data = $.param(data);
+        img.src = 'http://tracker.otvcloud.com/t.gif?_=' + timeStamp + '&' + data;
 
         img.onabort = function () {
             self.onCommit();
@@ -595,6 +614,7 @@ $.extend(true, GetVideoInfo.prototype, {
     },
     onCommit: function () {
         var self = this;
+        self.totalStickDuration = 0;   //发送数据以后，重新计算卡顿时长，重置为0
         setTimeout(function () {
             self.executePolling();
         }, 1000 * this.interval);
