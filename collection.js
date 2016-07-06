@@ -13,11 +13,15 @@ var GetVideoInfo = function (options) {
     this.initialize.apply(this);   //初始化操作
     if(!(this.getCookie('uid').length === 32)){
         this.uid = this.createUID(32);
-        this.setCookie('uid', this.uid, 3650)
+        this.setCookie('uid', this.uid, 3650);
+        this.models.nu = 1;
+    } else {
+        this.models.nu = 0;
     }
 };
 
 $.extend(true, GetVideoInfo.prototype, {
+    isNewUser: 1,  //0是老用户，1是新用户
     videoObject: '',
     sendNumbers: 0,   //发送序号
     stickTimes: 0,  //卡顿次数
@@ -352,9 +356,14 @@ $.extend(true, GetVideoInfo.prototype, {
     },
     initialize: function () {},
     setCookie: function (cname, cvalue, exdays) {
-        var d = new Date();
-        d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
-        var expires = "expires=" + d.toUTCString();
+        var d = new Date(),
+            expires;
+        if(exdays == 'undefined') {
+            expires = '';
+        } else {
+            d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+            expires = "expires=" + d.toUTCString();
+        }
         document.cookie = cname + "=" + cvalue + "; " + expires;
     },
     getCookie: function (cname) {
@@ -404,7 +413,7 @@ $.extend(true, GetVideoInfo.prototype, {
         return encodeURIComponent($('title').text());
     },
     getCurrentURL: function () {
-        return encodeURIComponent(window.location.href);
+        return encodeURIComponent(window.location.hostname + window.location.pathname);
     },
     getVideoURL: function () {
         return encodeURIComponent(this.videoObject.currentSrc);
@@ -534,6 +543,10 @@ $.extend(true, GetVideoInfo.prototype, {
         return (Math.round(this.videoObject.currentTime) - lastTime) > 0 ? (Math.round(this.videoObject.currentTime) - lastTime) : 0;
     },
     processData: function () {
+        if(!(this.getCookie('uid').length === 32)){
+            this.setCookie('sessionID', this.createUID(32));
+        }
+        this.models.s = this.getCookie('sessionID');
         this.models.sn = this.sendNumbers;
         this.models.ref = this.getReferrer();  //ref: 来源（来自于来个页面）
         this.models.pu = this.getCurrentURL();  //pu：page url 页面url（当前页面url）
