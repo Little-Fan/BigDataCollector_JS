@@ -22,11 +22,15 @@ var GetVideoInfo = function (options) {
 
 $.extend(true, GetVideoInfo.prototype, {
     isNewUser: 1,  //0是老用户，1是新用户
-    videoObject: '',
+    videoObject: '',  //视频jquery对象,现在只能统计页面上一个视频的数据
     sendNumbers: 0,   //发送序号
     stickTimes: 0,  //卡顿次数
     lastPlayTime: 0, //上次播放时间位置
-    model: {},
+    totalStickDuration: 0,  //在轮询时长周期内的总卡顿时长
+    polling: false,  //是否轮询
+    pollingTimes: 10, //轮询时长
+    url: '',  //服务器地址
+    interval: 1,
     regexes: {
         device_parsers: [ {
             regex: "HTC ([A-Z][a-z0-9]+) Build",
@@ -448,7 +452,7 @@ $.extend(true, GetVideoInfo.prototype, {
     },
     calcLoadingTime: function () {
         this.videoLoadTime = Number(new Date().getTime()) - this.pageStartTime;
-        this.startPolling(10);
+        this.startPolling(this.pollingTimes);
     },
     userAgent: function () {
         this.ua = window.navigator.userAgent;
@@ -567,7 +571,6 @@ $.extend(true, GetVideoInfo.prototype, {
         this.models.sd = this.totalStickDuration / 1000;
         return this.models;
     },
-    totalStickDuration: 0,
     bindStickTimes: function () {
         var self = this,
             currentStickDuration = 0,
@@ -587,10 +590,6 @@ $.extend(true, GetVideoInfo.prototype, {
             }
         });
     },
-
-    polling: false,
-    url: '',
-    interval: 1,
     startPolling: function (interval) {
         this.polling = true;
 
@@ -613,7 +612,7 @@ $.extend(true, GetVideoInfo.prototype, {
         data = self.processData();
         self.lastPlayTime = data.pt;
         data = $.param(data);
-        img.src = 'http://tracker.otvcloud.com/t.gif?_=' + timeStamp + '&' + data;
+        img.src = self.url + '?_=' + timeStamp + '&' + data;
 
         img.onabort = function () {
             self.onCommit();
@@ -628,7 +627,11 @@ $.extend(true, GetVideoInfo.prototype, {
     },
     onCommit: function () {
         var self = this;
-        self.totalStickDuration = 0;   //发送数据以后，重新计算卡顿时长，重置为0
+
+        //发送数据以后，重新计算卡顿时长、卡顿次数都重置为0
+        self.totalStickDuration = 0;
+        self.stickTimes = 0;
+
         setTimeout(function () {
             self.executePolling();
         }, 1000 * this.interval);

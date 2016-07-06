@@ -13,6 +13,8 @@
 <script src="collection.js"></script>
 <script>
     var getVideoInfo = new GetVideoInfo({
+        url: 'http://tracker.otvcloud.com/t.gif',
+        pollingTimes: 10,
         initialize: function () {
             this.getVideo('video');
             this.userAgent();
