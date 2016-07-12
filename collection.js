@@ -24,7 +24,7 @@ GetVideoInfo.prototype = {
     constructor: GetVideoInfo,
     isNewUser: 1,  //0是老用户，1是新用户
     videoObject: '',  //视频jquery对象,现在只能统计页面上一个视频的数据
-    sendNumbers: 0,   //发送序号
+    sendNumbers: 1,   //发送序号
     stickTimes: 0,  //卡顿次数
     lastPlayTime: 0, //上次播放时间位置
     totalStickDuration: 0,  //在轮询时长周期内的总卡顿时长
@@ -444,7 +444,7 @@ GetVideoInfo.prototype = {
     evenInitialize: function () {
         var self = this;
 
-        if (self.sendNumbers === 0) {
+        if (self.sendNumbers === 1) {
             self.addEvent(self.videoObject, 'timeupdate', self.calcLoadingTime.call(self));  //第一次开始播放的时候,证明缓冲已经完成
             self.processData();   //数据组装
         } else {
@@ -597,7 +597,7 @@ GetVideoInfo.prototype = {
             waitingUnix = Number(new Date().getTime());
         });
 
-        self.addEvent(self.videoObject, 'playing', function () {
+        self.addEvent(self.videoObject, 'canplay', function () {
             playingUnix = Number(new Date().getTime());
             if ((playingUnix - waitingUnix) > 0) {
                 currentStickDuration = playingUnix - waitingUnix;
