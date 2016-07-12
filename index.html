@@ -9,12 +9,10 @@
 </head>
 <body>
 <video src="video/LoveMore.mp4" width="500" height="350" controls="controls"></video>
-<script src="node_modules/jquery/dist/jquery.js"></script>
-<script src="collection.js"></script>
+<script src="collection.js"></script> <!-- 替换成线上地址 -->
 <script>
     var getVideoInfo = new GetVideoInfo({
-        url: 'http://tracker.otvcloud.com/t.gif',
-        pollingTimes: 10,
+        pollingTimes: 10,  //轮询时长
         initialize: function () {
             this.getVideo('video');
             this.userAgent();

@@ -5,13 +5,13 @@
 var GetVideoInfo = function (options) {
     this._reset();
     options || (options = {});
-    $.extend(this, options);
-    if (!window.PAGE_START_TIME){
+    this.extend(this, options);
+    if (!window.PAGE_START_TIME) {
         throw new Error('请先在页面顶部复制以下代码：window.PAGE_START_TIME = new Date().getTime();');
     }
     this.pageStartTime = window.PAGE_START_TIME;
     this.initialize.apply(this);   //初始化操作
-    if(!(this.getCookie('uid').length === 32)){
+    if (!(this.getCookie('uid').length === 32)) {
         this.uid = this.createUID(32);
         this.setCookie('uid', this.uid, 3650);
         this.models.nu = 1;
@@ -20,7 +20,7 @@ var GetVideoInfo = function (options) {
     }
 };
 
-$.extend(true, GetVideoInfo.prototype, {
+GetVideoInfo.prototype = {
     isNewUser: 1,  //0是老用户，1是新用户
     videoObject: '',  //视频jquery对象,现在只能统计页面上一个视频的数据
     sendNumbers: 0,   //发送序号
@@ -29,10 +29,10 @@ $.extend(true, GetVideoInfo.prototype, {
     totalStickDuration: 0,  //在轮询时长周期内的总卡顿时长
     polling: false,  //是否轮询
     pollingTimes: 10, //轮询时长
-    url: '',  //服务器地址
+    url: 'http://tracker.otvcloud.com/t.gif',  //服务器地址
     interval: 1,
     regexes: {
-        device_parsers: [ {
+        device_parsers: [{
             regex: "HTC ([A-Z][a-z0-9]+) Build",
             device_replacement: "HTC $1",
             manufacturer: "HTC"
@@ -358,11 +358,12 @@ $.extend(true, GetVideoInfo.prototype, {
             device_replacement: "Spider"
         }]
     },
-    initialize: function () {},
+    initialize: function () {
+    },
     setCookie: function (cname, cvalue, exdays) {
         var d = new Date(),
             expires;
-        if(exdays == 'undefined') {
+        if (exdays == 'undefined') {
             expires = '';
         } else {
             d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
@@ -398,7 +399,7 @@ $.extend(true, GetVideoInfo.prototype, {
     },
     getVideo: function (selector) {
         //只获取页面上第一个视频
-        this.videoObject = $(selector)[0];
+        this.videoObject = document.getElementsByTagName('video')[0];
     },
     getReferrer: function () {
         var ref = '';
@@ -414,7 +415,7 @@ $.extend(true, GetVideoInfo.prototype, {
         return encodeURIComponent(ref);
     },
     getTitle: function () {
-        return encodeURIComponent($('title').text());
+        return encodeURIComponent(document.getElementsByTagName('title')[0].innerHTML);
     },
     getCurrentURL: function () {
         return encodeURIComponent(window.location.hostname + window.location.pathname);
@@ -442,7 +443,7 @@ $.extend(true, GetVideoInfo.prototype, {
     evenInitialize: function () {
         var self = this;
 
-        if(self.sendNumbers === 0){
+        if (self.sendNumbers === 0) {
             self.addEvent(self.videoObject, 'timeupdate', self.calcLoadingTime.call(self));  //第一次开始播放的时候,证明缓冲已经完成
             self.processData();   //数据组装
         } else {
@@ -513,13 +514,15 @@ $.extend(true, GetVideoInfo.prototype, {
         }
         return "0.0.0";
     },
-    detectDeviceName : function () {
+    detectDeviceName: function () {
         var ua = this.ua,
             ret = {};
-        $.each(this.regexes.device_parsers, function (index, obj) {
+        this.regexes.device_parsers.forEach(function (index, obj) {
             var regexp = new RegExp(obj.regex), rep = obj.device_replacement, major_rep = obj.major_version_replacement;
             var m = ua.match(regexp);
-            if (!m) return;
+            if (!m) {
+                return;
+            }
             ret.family = (rep ? rep.replace("$1", m[1]) : m[1]) || "other";
             return true;
         });
@@ -546,8 +549,19 @@ $.extend(true, GetVideoInfo.prototype, {
     calcVideoDiffTime: function (lastTime) {
         return (Math.round(this.videoObject.currentTime) - lastTime) > 0 ? (Math.round(this.videoObject.currentTime) - lastTime) : 0;
     },
+    hasEnumBug: !{toString: null}.propertyIsEnumerable('toString'),
+    _isObject: function (obj) {
+        var type = typeof obj;
+        return type === 'function' || type === 'object' && !!obj;
+    },
+    extend: function (destination, source) {
+        for (property in source) {
+            destination[property] = source[property];
+        }
+        return destination;
+    },
     processData: function () {
-        if(!(this.getCookie('uid').length === 32)){
+        if (!(this.getCookie('uid').length === 32)) {
             this.setCookie('sessionID', this.createUID(32));
         }
         this.models.s = this.getCookie('sessionID');
@@ -563,12 +577,12 @@ $.extend(true, GetVideoInfo.prototype, {
         this.models.dr = this.getVideoDuration(); //dr: 视频文件总时长(videoDuration)
         this.models.lt = (this.videoLoadTime) / 1000 || 0;  //lt: 加载时长  单位秒（loaddingTime）
         this.models.st = this.stickTimes;   //卡顿次数
+        this.models.sd = this.totalStickDuration / 1000;  //卡顿时长
         this.models.pt = this.getVideoCurrentTime();  //获取当前播放的时间点
         this.models.rpt = this.calcVideoDiffTime(this.lastPlayTime); //实际播放时长用这个字段
         this.models.tpt = (Number(new Date().getTime()) - this.pageStartTime) / 1000;  //单位秒
         this.models.stay = this.models.tpt;  //停留时长
         this.models.uid = this.getCookie('uid');
-        this.models.sd = this.totalStickDuration / 1000;
         return this.models;
     },
     bindStickTimes: function () {
@@ -602,6 +616,23 @@ $.extend(true, GetVideoInfo.prototype, {
     stopPolling: function () {
         this.polling = false;
     },
+    param: function (obj) {
+        var prefix,
+            s = [],
+            add = function (key, value) {
+
+                value = value == null ? "" : value;
+                s[s.length] = encodeURIComponent(key) + "=" + encodeURIComponent(value);
+            };
+
+        for (var prop in obj) {
+            if (obj.hasOwnProperty(prop)) {
+                add(prop, obj[prop]);
+            }
+        }
+
+        return s.join("&").replace(/%20/g, "+");
+    },
     executePolling: function () {
         /* 上传数据操作 */
         var img = new Image(),
@@ -611,7 +642,7 @@ $.extend(true, GetVideoInfo.prototype, {
 
         data = self.processData();
         self.lastPlayTime = data.pt;
-        data = $.param(data);
+        data = this.param(data);
         img.src = self.url + '?_=' + timeStamp + '&' + data;
 
         img.onabort = function () {
@@ -621,7 +652,7 @@ $.extend(true, GetVideoInfo.prototype, {
             self.onCommit();
         };
         img.onload = function () {
-            self.sendNumbers ++;
+            self.sendNumbers++;
             self.onCommit();
         };
     },
@@ -636,4 +667,4 @@ $.extend(true, GetVideoInfo.prototype, {
             self.executePolling();
         }, 1000 * this.interval);
     }
-});
+}
