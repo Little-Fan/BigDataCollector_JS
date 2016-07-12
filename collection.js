@@ -21,6 +21,7 @@ var GetVideoInfo = function (options) {
 };
 
 GetVideoInfo.prototype = {
+    constructor: GetVideoInfo,
     isNewUser: 1,  //0是老用户，1是新用户
     videoObject: '',  //视频jquery对象,现在只能统计页面上一个视频的数据
     sendNumbers: 0,   //发送序号
@@ -667,4 +668,4 @@ GetVideoInfo.prototype = {
             self.executePolling();
         }, 1000 * this.interval);
     }
-}
+};
