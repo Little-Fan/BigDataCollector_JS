@@ -362,6 +362,7 @@ GetVideoInfo.prototype = {
         this.getVideo('video');
         this.userAgent();
         this.evenInitialize();
+        this.settingVid(this.models.vid);
     },
     setCookie: function (cname, cvalue, exdays) {
         var d = new Date(),
@@ -444,7 +445,6 @@ GetVideoInfo.prototype = {
 
         if (self.sendNumbers === 1) {
             self.addEvent(self.videoObject, 'timeupdate', self.calcLoadingTime.call(self));  //第一次开始播放的时候,证明缓冲已经完成
-            self.processData();   //数据组装
         } else {
             self.removeEvent(this.videoObject, 'timeupdate', self.calcLoadingTime);  //删除事件监听，节约内存
         }
@@ -555,9 +555,6 @@ GetVideoInfo.prototype = {
         return destination;
     },
     processData: function () {
-        if (!(this.getCookie('uid').length === 32)) {
-            this.setCookie('sessionID', this.createUID(32));
-        }
         this.models.s = this.getCookie('sessionID');
         this.models.sn = this.sendNumbers;
         this.models.ref = this.getReferrer();  //ref: 来源（来自于来个页面）
@@ -574,10 +571,12 @@ GetVideoInfo.prototype = {
         this.models.sd = this.totalStickDuration / 1000;  //卡顿时长
         this.models.pt = this.getVideoCurrentTime();  //获取当前播放的时间点
         this.models.rpt = this.calcVideoDiffTime(this.lastPlayTime); //实际播放时长用这个字段
-        this.models.tpt = (Number(new Date().getTime()) - this.pageStartTime) / 1000;  //单位秒
-        this.models.stay = this.models.tpt;  //停留时长
+        this.models.tpt = this.models.stay = (Number(new Date().getTime()) - this.pageStartTime) / 1000;  //停留时长单位秒
         this.models.uid = this.getCookie('uid');
         return this.models;
+    },
+    reset: function () {
+        this.sendNumbers = 1;
     },
     bindStickTimes: function () {
         var self = this,
@@ -627,12 +626,32 @@ GetVideoInfo.prototype = {
 
         return s.join("&").replace(/%20/g, "+");
     },
+    settingVid: function (vid) {
+      this.vid = vid;
+    },
+    isSwitchVideo: function () {
+        var previous = this.vid;
+        if (previous !== this.models.vid) {
+            this.vid = this.models.vid;
+            this.reset();
+        }
+    },
+    isfirstVisit: true,
     executePolling: function () {
         /* 上传数据操作 */
         var img = new Image(),
             self = this,
             timeStamp = new Date().getTime(),
             data;
+
+        if (self.isfirstVisit === true) {
+            if (!(this.getCookie('uid').length === 32)) {
+                this.setCookie('sessionID', this.createUID(32));
+            }
+            self.isfirstVisit = false;
+        } else {
+            this.isSwitchVideo();
+        }
 
         data = self.processData();
         self.lastPlayTime = data.pt;
