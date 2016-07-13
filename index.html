@@ -4,64 +4,64 @@
     <meta charset="UTF-8">
     <title>获取视频信息</title>
     <script>
-        window.PAGE_START_TIME = new Date().getTime();
+        window.PAGE_START_TIME = new Date().getTime(); //放到页面最顶端，用户获取视频加载时长
     </script>
 </head>
 <body>
 <video src="http://ceshi-219.chinacloudapp.cn:8082/LoveMore.mp4" width="500" height="350" controls="controls"></video>
+<button>切换视频</button>
 <script src="collection.js"></script> <!-- 替换成线上地址 -->
 <script>
     var getVideoInfo = new GetVideoInfo({
-        pollingTimes: 20,  //轮询时长
-        initialize: function () {
-            this.getVideo('video');
-            this.userAgent();
-            this.evenInitialize();
-        },
+        pollingTimes: 5,  //轮询时长
         //默认参数
-        models:{
-            appid: 1,  //应用ID (应用ID)
-            cmd: '2',  //播放类型(直播、点播)
-            vid: '3',  //业务系统中的视频ID(vedioId)
-            von: '4',  //视频原始名称(VideoOriginalName)
-            n: '5',  //视频名称(VideoName)
-            ch: '6',  //视频频道(VideoTVChannel)
-            wch: '7', // 网络频道(VideoWebChannel)
-            tg: '8', //标签
-            cdn: '9' //cdn信息
+        models: {
+            appid: 'xxxxxx',  //应用ID (应用ID,在接入前，需要由OTVCLOUD分配)
+            cmd: 'lvpl',  //播放类型(直播:lvpl、点播: vopl)
+            vid: 'CPRG0000000000002596',  //业务系统中的视频ID(content_id)
+            von: '弃子的艺术2',  //视频原始名称
+            n: '弃子的艺术2',  //视频名称：可与von一样
+            ch: '围棋天元',  //视频频道
+            wch: '围棋天元', // 网络频道：可与ch的值相同，可为空
+            tg: '', //标签：可为空
+            cdn: '' //cdn信息：可为空
         }
     });
 
     /*var eventTester = function(e){
-        getVideoInfo.videoObject.addEventListener(e,function(){
-            console.log((new Date()).getTime(),e)
-        },false);
-    };
+     getVideoInfo.videoObject.addEventListener(e,function(){
+     console.log((new Date()).getTime(),e)
+     },false);
+     };
 
-    //eventTester("timeupdate"); //播放时间改变
-    eventTester("emptied"); //当目前的播放列表为空时
-    eventTester("loadstart"); //客户端开始请求数据
-    //eventTester("progress"); //客户端正在请求数据
-    eventTester("abort"); //客户端主动终止下载（不是因为错误引起）
-    eventTester("loadstart"); //客户端开始请求数据
-    eventTester("suspend"); //延迟下载
-    eventTester("error"); //请求数据时遇到错误
-    eventTester("stalled"); //网速失速
-    eventTester("play"); //play()和autoplay开始播放时触发
-    eventTester("pause"); //pause()触发
-    eventTester("loadedmetadata"); //成功获取资源长度
-    eventTester("loadeddata"); //
-    eventTester("waiting"); //等待数据，并非错误
-    eventTester("playing"); //开始回放
-    eventTester("canplay"); //可以播放，但中途可能因为加载而暂停
-    eventTester("canplaythrough"); //可以播放，歌曲全部加载完毕
-    eventTester("seeking"); //寻找中
-    eventTester("seeked"); //寻找完毕
-    eventTester("ended"); //播放结束
-    eventTester("ratechange"); //播放速率改变
-    eventTester("durationchange"); //资源长度改变
-    eventTester("volumechange"); //音量改变
-    eventTester("ended"); //当目前的播放列表已结束时*/
+     //eventTester("timeupdate"); //播放时间改变
+     eventTester("emptied"); //当目前的播放列表为空时
+     eventTester("loadstart"); //客户端开始请求数据
+     //eventTester("progress"); //客户端正在请求数据
+     eventTester("abort"); //客户端主动终止下载（不是因为错误引起）
+     eventTester("loadstart"); //客户端开始请求数据
+     eventTester("suspend"); //延迟下载
+     eventTester("error"); //请求数据时遇到错误
+     eventTester("stalled"); //网速失速
+     eventTester("play"); //play()和autoplay开始播放时触发
+     eventTester("pause"); //pause()触发
+     eventTester("loadedmetadata"); //成功获取资源长度
+     eventTester("loadeddata"); //
+     eventTester("waiting"); //等待数据，并非错误
+     eventTester("playing"); //开始回放
+     eventTester("canplay"); //可以播放，但中途可能因为加载而暂停
+     eventTester("canplaythrough"); //可以播放，歌曲全部加载完毕
+     eventTester("seeking"); //寻找中
+     eventTester("seeked"); //寻找完毕
+     eventTester("ended"); //播放结束
+     eventTester("ratechange"); //播放速率改变
+     eventTester("durationchange"); //资源长度改变
+     eventTester("volumechange"); //音量改变
+     eventTester("ended"); //当目前的播放列表已结束时*/
+    document.getElementsByTagName('button')[0].onclick = function (e) {
+        getVideoInfo.models.vid = 'fanxiaolong';
+        console.log(getVideoInfo);
+    }
 </script>
 </body>
 </html>
