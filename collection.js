@@ -3,13 +3,12 @@
  */
 
 var GetVideoInfo = function (options) {
-    this._reset();
     options || (options = {});
     this.extend(this, options);
     if (!window.PAGE_START_TIME) {
         throw new Error('请先在页面顶部复制以下代码：window.PAGE_START_TIME = new Date().getTime();');
     }
-    this.pageStartTime = window.PAGE_START_TIME;
+    this.pageStartTime = window.PAGE_START_TIME;   //页面开始时间戳
     this.initialize.apply(this);   //初始化操作
     if (!(this.getCookie('uid').length === 32)) {
         this.uid = this.createUID(32);
@@ -360,6 +359,9 @@ GetVideoInfo.prototype = {
         }]
     },
     initialize: function () {
+        this.getVideo('video');
+        this.userAgent();
+        this.evenInitialize();
     },
     setCookie: function (cname, cvalue, exdays) {
         var d = new Date(),
@@ -393,10 +395,6 @@ GetVideoInfo.prototype = {
             g += Math.floor(Math.random() * 16.0).toString(16);
         }
         return g
-    },
-    _reset: function () {
-        this.length = 0;
-        this.models = {};
     },
     getVideo: function (selector) {
         //只获取页面上第一个视频
@@ -549,11 +547,6 @@ GetVideoInfo.prototype = {
     },
     calcVideoDiffTime: function (lastTime) {
         return (Math.round(this.videoObject.currentTime) - lastTime) > 0 ? (Math.round(this.videoObject.currentTime) - lastTime) : 0;
-    },
-    hasEnumBug: !{toString: null}.propertyIsEnumerable('toString'),
-    _isObject: function (obj) {
-        var type = typeof obj;
-        return type === 'function' || type === 'object' && !!obj;
     },
     extend: function (destination, source) {
         for (property in source) {
