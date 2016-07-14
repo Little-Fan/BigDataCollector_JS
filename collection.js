@@ -362,7 +362,7 @@ GetVideoInfo.prototype = {
         this.getVideo('video');
         this.userAgent();
         this.evenInitialize();
-        this.settingVid(this.models.vid);
+        this.settingVd(this.models.vd);
     },
     setCookie: function (cname, cvalue, exdays) {
         var d = new Date(),
@@ -515,16 +515,20 @@ GetVideoInfo.prototype = {
     },
     detectDeviceName: function () {
         var ua = this.ua,
-            ret = {};
-        this.regexes.device_parsers.forEach(function (index, obj) {
-            var regexp = new RegExp(obj.regex), rep = obj.device_replacement, major_rep = obj.major_version_replacement;
-            var m = ua.match(regexp);
+            ret = {},
+            length = this.regexes.device_parsers.length;
+
+        for (var i = 0; i < length; i++) {
+            var obj = this.regexes.device_parsers[i],
+                regexp = new RegExp(obj.regex), rep = obj.device_replacement, major_rep = obj.major_version_replacement,
+                m = ua.match(regexp);
+
             if (!m) {
-                return;
+                continue;
             }
             ret.family = (rep ? rep.replace("$1", m[1]) : m[1]) || "other";
-            return true;
-        });
+            break;
+        }
         return ret.family || "other";
     },
     _getVersion: function (ua, token) {
