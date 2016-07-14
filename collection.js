@@ -626,13 +626,13 @@ GetVideoInfo.prototype = {
 
         return s.join("&").replace(/%20/g, "+");
     },
-    settingVid: function (vid) {
-      this.vid = vid;
+    settingVd: function (vd) {
+      this.vd = vd;
     },
     isSwitchVideo: function () {
-        var previous = this.vid;
-        if (previous !== this.models.vid) {
-            this.vid = this.models.vid;
+        var previous = this.vd;
+        if (previous !== this.models.vd) {
+            this.vd = this.models.vd;
             this.reset();
         }
     },
