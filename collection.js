@@ -597,8 +597,8 @@ GetVideoInfo.prototype = {
 
         self.addEvent(self.videoObject, 'canplay', function () {
             playingUnix = Number(new Date().getTime());
-            if ((playingUnix - waitingUnix) > 0) {
-                currentStickDuration = playingUnix - waitingUnix;
+            currentStickDuration = playingUnix - waitingUnix;
+            if (currentStickDuration > 0 && currentStickDuration < this.pollingTimes) {
                 self.totalStickDuration = self.totalStickDuration + currentStickDuration;
             }
         });
