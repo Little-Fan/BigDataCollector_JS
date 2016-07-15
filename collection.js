@@ -21,6 +21,7 @@ var GetVideoInfo = function (options) {
 
 GetVideoInfo.prototype = {
     constructor: GetVideoInfo,
+    version: '1.0.0',
     isNewUser: 1,  //0是老用户，1是新用户
     videoObject: '',  //视频jquery对象,现在只能统计页面上一个视频的数据
     sendNumbers: 0,   //发送序号
@@ -577,6 +578,7 @@ GetVideoInfo.prototype = {
         this.models.rpt = this.calcVideoDiffTime(this.lastPlayTime); //实际播放时长用这个字段
         this.models.tpt = this.models.stay = (Number(new Date().getTime()) - this.pageStartTime) / 1000;  //停留时长单位秒
         this.models.uid = this.getCookie('uid');
+        this.models.ver = this.version;
         return this.models;
     },
     reset: function () {
