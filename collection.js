@@ -10,26 +10,20 @@ var GetVideoInfo = function (options) {
     }
     this.pageStartTime = window.PAGE_START_TIME;   //页面开始时间戳
     this.initialize.apply(this);   //初始化操作
-    if (!(this.getCookie('uid').length === 32)) {
-        this.uid = this.createUID(32);
-        this.setCookie('uid', this.uid, 3650);
-        this.models.nu = 1;
-    } else {
-        this.models.nu = 0;
-    }
 };
 
 GetVideoInfo.prototype = {
     constructor: GetVideoInfo,
     version: '1.0.0',
-    isNewUser: 1,  //0是老用户，1是新用户
     videoObject: '',  //视频jquery对象,现在只能统计页面上一个视频的数据
+    models: {},
     sendNumbers: 0,   //发送序号
     stickTimes: 0,  //卡顿次数
     lastPlayTime: 0, //上次播放时间位置
     totalStickDuration: 0,  //在轮询时长周期内的总卡顿时长
+    videoLoadTime: 0, //页面加载时长
     polling: false,  //是否轮询
-    pollingTimes: 10, //轮询时长
+    pollingTimes: 60, //轮询时长
     url: 'http://tracker.otvcloud.com/t.gif',  //服务器地址
     interval: 1,
     regexes: {
@@ -359,11 +353,23 @@ GetVideoInfo.prototype = {
             device_replacement: "Spider"
         }]
     },
+    isNewUser: function () {
+        return !this.getCookie('uid');
+    },
     initialize: function () {
-        this.getVideo('video');
+        this.getVideo();
         this.userAgent();
         this.evenInitialize();
         this.settingVd(this.models.vd);
+
+        //判断用户是否为新用户: 0是老用户，1是新用户
+        if(this.isNewUser()){
+            this.uid = this.createUID(32);
+            this.setCookie('uid', this.uid, 3650);
+            this.models.nu = 1;
+        } else {
+            this.models.nu = 0;
+        }
     },
     setCookie: function (cname, cvalue, exdays) {
         var d = new Date(),
@@ -398,7 +404,7 @@ GetVideoInfo.prototype = {
         }
         return g
     },
-    getVideo: function (selector) {
+    getVideo: function () {
         //只获取页面上第一个视频
         this.videoObject = document.getElementsByTagName('video')[0];
     },
@@ -456,8 +462,7 @@ GetVideoInfo.prototype = {
         this.startPolling(this.pollingTimes);
     },
     userAgent: function () {
-        this.ua = window.navigator.userAgent;
-        return this.ua;
+        return this.ua = window.navigator.userAgent;
     },
     detectOS: function () {
         var ua = this.ua;
@@ -571,7 +576,7 @@ GetVideoInfo.prototype = {
         this.models.pf = this.detectOS();  // pf:播放平台（android，IOS，windows）
         this.models.at = this.detectDeviceName();  // at:机型
         this.models.dr = this.getVideoDuration(); //dr: 视频文件总时长(videoDuration)
-        this.models.lt = (this.videoLoadTime) / 1000 || 0;  //lt: 加载时长  单位秒（loaddingTime）
+        this.models.lt = (this.videoLoadTime) / 1000;  //lt: 加载时长  单位秒（loaddingTime）
         this.models.st = this.stickTimes;   //卡顿次数
         this.models.sd = this.totalStickDuration / 1000;  //卡顿时长
         this.models.pt = this.getVideoCurrentTime();  //获取当前播放的时间点
