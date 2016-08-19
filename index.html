@@ -9,11 +9,10 @@
 </head>
 <body>
 <video src="http://ceshi-219.chinacloudapp.cn:8082/LoveMore.mp4" width="500" height="350" controls="controls"></video>
-<button>切换视频</button>
 <script src="collection.js"></script> <!-- 替换成线上地址 -->
 <script>
     var getVideoInfo = new GetVideoInfo({
-        pollingTimes: 5,  //轮询时长
+        pollingTimes: 60,  //轮询时长
         //默认参数
         models: {
             appid: 'xxxxxx',  //应用ID (应用ID,在接入前，需要由OTVCLOUD分配)
@@ -34,10 +33,10 @@
      },false);
      };
 
-     //eventTester("timeupdate"); //播放时间改变
+     eventTester("timeupdate"); //播放时间改变
      eventTester("emptied"); //当目前的播放列表为空时
      eventTester("loadstart"); //客户端开始请求数据
-     //eventTester("progress"); //客户端正在请求数据
+     eventTester("progress"); //客户端正在请求数据
      eventTester("abort"); //客户端主动终止下载（不是因为错误引起）
      eventTester("loadstart"); //客户端开始请求数据
      eventTester("suspend"); //延迟下载
@@ -58,39 +57,6 @@
      eventTester("durationchange"); //资源长度改变
      eventTester("volumechange"); //音量改变
      eventTester("ended"); //当目前的播放列表已结束时*/
-    document.getElementsByTagName('button')[0].onclick = function (e) {
-        getVideoInfo.models.vid = 'fanxiaolong';
-        console.log(getVideoInfo);
-    };
-
-    var b = getTime();
-
-    function getTime() {
-        return Date.now();
-    }
-
-    document.addEventListener('webkitvisibilitychange', function () {
-
-        if (document.webkitVisibilityState == 'hidden') {
-            b = getTime();
-
-        } else {
-            document.body.appendChild(document.createTextNode('间隔:' + (getTime() - b)))
-
-        }
-
-    })
-    document.addEventListener('mozvisibilitychange', function () {
-
-        if (document.mozVisibilityState == 'hidden') {
-            b = getTime();
-
-        } else {
-            document.body.appendChild(document.createTextNode('间隔:' + (getTime() - b)))
-
-        }
-
-    })
 </script>
 </body>
 </html>

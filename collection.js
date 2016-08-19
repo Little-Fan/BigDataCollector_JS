@@ -14,7 +14,7 @@ var GetVideoInfo = function (options) {
 
 GetVideoInfo.prototype = {
     constructor: GetVideoInfo,
-    version: '1.0.0',
+    version: '1.0.1',
     videoObject: '',  //视频jquery对象,现在只能统计页面上一个视频的数据
     models: {},
     sendNumbers: 0,   //发送序号
@@ -363,7 +363,7 @@ GetVideoInfo.prototype = {
         this.settingVd(this.models.vd);
 
         //判断用户是否为新用户: 0是老用户，1是新用户
-        if(this.isNewUser()){
+        if (this.isNewUser()) {
             this.uid = this.createUID(32);
             this.setCookie('uid', this.uid, 3650);
             this.models.nu = 1;
@@ -564,6 +564,9 @@ GetVideoInfo.prototype = {
         }
         return destination;
     },
+    getTimeOnSite: function () {
+        return Number(new Date().getTime()) - this.pageStartTime;
+    },
     processData: function () {
         this.models.s = this.getCookie('sessionID');
         this.models.sn = this.sendNumbers;
@@ -576,13 +579,14 @@ GetVideoInfo.prototype = {
         this.models.pf = this.detectOS();  // pf:播放平台（android，IOS，windows）
         this.models.at = this.detectDeviceName();  // at:机型
         this.models.dr = this.getVideoDuration(); //dr: 视频文件总时长(videoDuration)
-        this.models.lt = (this.videoLoadTime) / 1000;  //lt: 加载时长  单位秒（loaddingTime）
         this.models.st = this.stickTimes;   //卡顿次数
         this.models.sd = this.totalStickDuration / 1000;  //卡顿时长
+        this.models.lt = this.videoLoadTime / 1000;  //lt: 加载时长  单位秒（loaddingTime）
+        this.models.stay = this.getTimeOnSite() / 1000;  //停留时长单位秒
         this.models.pt = this.getVideoCurrentTime();  //获取当前播放的时间点
         this.models.rpt = this.calcVideoDiffTime(this.lastPlayTime); //实际播放时长用这个字段
-        this.models.tpt = this.models.stay = (Number(new Date().getTime()) - this.pageStartTime) / 1000;  //停留时长单位秒
         this.models.uid = this.getCookie('uid');
+        this.models.tpt = this.models.stay;
         this.models.ver = this.version;
         return this.models;
     },
@@ -591,21 +595,38 @@ GetVideoInfo.prototype = {
     },
     bindStickTimes: function () {
         var self = this,
-            currentStickDuration = 0,
-            waitingUnix,
-            playingUnix;
+            stickStatus = false,
+            waitingUnix = 0,
+            playingUnix = 0;
 
         self.addEvent(self.videoObject, 'waiting', function () {
             self.stickTimes++;
-            waitingUnix = Number(new Date().getTime());
+
+            //如果是连续卡顿，则计算最早的一次卡顿的时间戳
+            if (!stickStatus) {
+                self.stickTimes++;
+                waitingUnix = Number(new Date().getTime());
+                stickStatus = true;
+            }
         });
 
         self.addEvent(self.videoObject, 'canplay', function () {
-            playingUnix = Number(new Date().getTime());
-            currentStickDuration = playingUnix - waitingUnix;
-            if (currentStickDuration > 0 && currentStickDuration < this.pollingTimes) {
-                self.totalStickDuration = self.totalStickDuration + currentStickDuration;
+
+            //如果当前播事件前面没有等待时间的时间戳
+            if (waitingUnix !== 0) {
+                playingUnix = Number(new Date().getTime());
+                var currentStickDuration = playingUnix - waitingUnix;  //当前这次的卡顿时长
+                if (currentStickDuration > 0) {
+
+                    self.totalStickDuration = self.totalStickDuration + currentStickDuration;  //计算总的卡顿时长
+
+                    //每次成功计算完当前卡顿时长后，重置状态，开始新一轮的卡顿时长计算
+                    stickStatus = false;
+                    waitingUnix = waitingUnix = 0;
+                    // console.log('当前等待时长：',currentStickDuration/1000, 's;总共等待时长：',self.totalStickDuration/1000,'s');
+                }
             }
+
         });
     },
     startPolling: function (interval) {
@@ -638,7 +659,7 @@ GetVideoInfo.prototype = {
         return s.join("&").replace(/%20/g, "+");
     },
     settingVd: function (vd) {
-      this.vd = vd;
+        this.vd = vd;
     },
     isSwitchVideo: function () {
         var previous = this.vd;
